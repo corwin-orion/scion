@@ -1,0 +1,23 @@
+{
+  "name": "scion",
+  "version": "1.0.0",
+  "description": "A discord bot with miscellaneous functionality that I find useful.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/corwin-orion/scion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/corwin-orion/scion/issues"
+  },
+  "homepage": "https://github.com/corwin-orion/scion#readme",
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  }
+}

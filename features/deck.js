@@ -48,7 +48,7 @@ export function discardCardsFromDeck(deck, number) {
   let numCardsDiscarded = 0;
   for (let i = 0; i < number; i++) {
     if (cards.length === 0) break;
-    console.log(cards.pop());
+    cards.pop();
     numCardsDiscarded++;
   }
   return numCardsDiscarded;

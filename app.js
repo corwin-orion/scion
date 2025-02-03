@@ -9,8 +9,8 @@ import {
 	verifyKeyMiddleware,
 } from 'discord-interactions';
 import { DiscordRequest } from './utils.js';
-import { drawCardsFromDeck, getPokerCardByNumber, getNewPokerDeck, shuffleDeck, discardCardsFromDeck } from './deck.js';
-import { getNewQuietYearDeck, getQuietYearCardByNumber, getNewFleetingYearDeck } from './quiet-year.js';
+import { drawCardsFromDeck, getPokerCardByNumber, getNewPokerDeck, shuffleDeck, discardCardsFromDeck } from './features/deck.js';
+import { getNewQuietYearDeck, getQuietYearCardByNumber, getNewFleetingYearDeck } from './features/quiet-year.js';
 
 // Create an express app
 const app = express();
@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 // To keep track of the deck
 const deck = { type: "poker", cards: getNewPokerDeck() };
 shuffleDeck(deck);
+const quietYearGame = null;
 
 /**
  * Interactions endpoint URL where Discord will send HTTP requests

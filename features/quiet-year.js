@@ -1,5 +1,5 @@
-import { removeRandomElementsFromArray } from "./helpers/removeRandomElementsFromArray.js";
-import { shuffleArray } from "./helpers/shuffleArray.js";
+import { removeRandomElementsFromArray } from "../helpers/removeRandomElementsFromArray.js";
+import { shuffleArray } from "../helpers/shuffleArray.js";
 
 export function getQuietYearCardByNumber(cardNumber) {
 	let result = "";

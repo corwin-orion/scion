@@ -1,7 +1,4 @@
-import { Emoji } from 'discord.js';
-import { capitalize } from './utils.js';
-
-export function getCardByNumber(cardNumber) {
+export function getPokerCardByNumber(cardNumber) {
   let result = "";
   const numericValue = cardNumber % 13;
   const suit = cardNumber / 13;
@@ -23,7 +20,7 @@ export function getCardByNumber(cardNumber) {
   return result
 }
 
-export function getNewDeck() {
+export function getNewPokerDeck() {
   return [...Array(52).keys()];
 }
 
@@ -35,11 +32,24 @@ export function shuffleDeck(deck) {
   }
 }
 
-export function drawCardsFromDeck(deck, number) {  
+export function drawCardsFromDeck(deck, number) {
   const result = [];
   for (let i = 0; i < number; i++) {
     if (deck.cards.length == 0) break;
     result.push(deck.cards.pop());
   }
   return result;
+}
+
+export function discardCardsFromDeck(deck, number) {
+  const { cards } = deck;
+  if (cards.length === 0) return -1;
+
+  let numCardsDiscarded = 0;
+  for (let i = 0; i < number; i++) {
+    if (cards.length === 0) break;
+    console.log(cards.pop());
+    numCardsDiscarded++;
+  }
+  return numCardsDiscarded;
 }

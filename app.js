@@ -9,14 +9,15 @@ import {
   verifyKeyMiddleware,
 } from 'discord-interactions';
 import { getRandomEmoji, DiscordRequest } from './utils.js';
-import { drawCardsFromDeck, getCardByNumber, getNewDeck, shuffleDeck } from './deck.js';
+import { drawCardsFromDeck, getPokerCardByNumber, getNewPokerDeck, shuffleDeck, discardCardsFromDeck } from './deck.js';
+import { getNewQuietYearDeck, getQuietYearCardByNumber } from './quiet-year.js';
 
 // Create an express app
 const app = express();
 // Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
 // To keep track of the deck
-const deck = { cards: getNewDeck() };
+const deck = { type: "poker", cards: getNewPokerDeck() };
 shuffleDeck(deck);
 
 /**
@@ -44,7 +45,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     // "reset-deck" command
     if (name === 'reset-deck') {
       try {
-        deck.cards = getNewDeck();
+        deck.cards = getNewPokerDeck();
       } catch {
         return res.status(400).json({ error: 'could not reset deck' });
       }
@@ -75,9 +76,10 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     // "shuffle" command
     if (name === 'shuffle') {
       try {
+        deck.type = "poker"
         shuffleDeck(deck);
-      } catch {
-        return res.status(400).json({ error: 'could not shuffle' });
+      } catch (err) {
+        return res.status(400).json({ error: 'could not shuffle', err });
       }
       // Send a message into the channel where command was triggered from
       return res.send({
@@ -89,11 +91,29 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       });
     }
 
+    // "shuffle-quiet-year" command
+    if (name === 'shuffle-quiet-year') {
+      try {
+        deck.type = "quiet year";
+        deck.cards = getNewQuietYearDeck();
+      } catch (err) {
+        return res.status(400).json({ error: 'could not shuffle', err });
+      }
+      // Send a message into the channel where command was triggered from
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: "The deck is now set up for The Quiet Year. Cards drawn will be accompanied by an Oracle result.",
+          flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+        },
+      });
+    }
+
     // "draw" command
     if (name === 'draw') {
       let numCardsToDraw = 1;
       options?.forEach(option => {
-        if (option.name === 'number') numCardsToDraw = option.value;
+        if (option.name === 'number' && deck.type !== "quiet year") numCardsToDraw = option.value;
       });
       const cardNumbers = drawCardsFromDeck(deck, numCardsToDraw);
       if (cardNumbers.length === 0) {
@@ -120,14 +140,64 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           },
         });
       }
-      const cards = cardNumbers.map(cardNumber => getCardByNumber(cardNumber));
-      let message = `Drew ${cards.length} cards:`;
+      const cards = deck.type === 'poker' ? 
+        cardNumbers.map(cardNumber => getPokerCardByNumber(cardNumber)) :
+        cardNumbers.map(cardNumber => getQuietYearCardByNumber(cardNumber));
+      let message = deck.type === 'poker' ?
+        `Drew ${cards.length} card${cards.length === 1 ? '' : 's'}:` :
+        '';
       cards.forEach(card => message += '\n' + card);
       // Send a message into the channel where command was triggered from
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           content: message,
+          flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+        },
+      });
+    }
+
+    // "discard" command
+    if (name === 'discard') {
+      let numCardsToDiscard = 1;
+      options?.forEach(option => {
+        if (option.name === 'number') numCardsToDiscard = option.value;
+      });
+      let numCardsDiscarded;
+      try {
+        numCardsDiscarded = discardCardsFromDeck(deck, numCardsToDiscard);
+      } catch (err) {
+        return res.status(400).json({ error: 'could not shuffle', err });
+      }
+      if (numCardsDiscarded === 1) {
+        // Deck is empty, prompt to reshuffle
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: "The deck is empty; reset it?",
+            flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+            components: [
+              {
+                type: MessageComponentTypes.ACTION_ROW,
+                components: [
+                  {
+                    type: MessageComponentTypes.BUTTON,
+                    // Value for your app to identify the button
+                    custom_id: 'reset_deck_button',
+                    label: 'Yes please',
+                    style: ButtonStyleTypes.PRIMARY,
+                  },
+                ],
+              },
+            ],
+          },
+        });
+      }
+      // Send a message into the channel where command was triggered from
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `Discarded ${numCardsDiscarded} cards`,
           flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
         },
       });
@@ -169,7 +239,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 
     if (componentId === 'reset_deck_button') {
       try {
-        deck.cards = getNewDeck();
+        deck.cards = getNewPokerDeck();
         shuffleDeck(deck);
         DiscordRequest(endpoint, {
           method: 'PATCH',

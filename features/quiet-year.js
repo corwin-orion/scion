@@ -15,10 +15,10 @@ export function getQuietYearCardByNumber(cardNumber) {
 	else cardValue = ` ${numericValue + 2}`;
 
 	// Combine card value with suit
-	if (suit < 1) result += `♠️ **${cardValue} of Spades**`;
-	else if (suit < 2) result += `♣️ **${cardValue} of Clubs**`;
-	else if (suit < 3) result += `♦️ **${cardValue} of Diamonds**`;
-	else result += `♥️ **${cardValue} of Hearts**`;
+	if (suit < 1) result += `♠️ ${cardValue} of Spades`;
+	else if (suit < 2) result += `♣️ ${cardValue} of Clubs`;
+	else if (suit < 3) result += `♦️ ${cardValue} of Diamonds`;
+	else result += `♥️ ${cardValue} of Hearts`;
 
 	// Add an Oracle result
 	const oracle = [

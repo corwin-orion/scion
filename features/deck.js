@@ -33,8 +33,9 @@ export function shuffleDeck(deck) {
 }
 
 export function drawCardsFromDeck(deck, number) {
+  const numCardsToDraw = number ?? 1;
   const result = [];
-  for (let i = 0; i < number; i++) {
+  for (let i = 0; i < numCardsToDraw; i++) {
     if (deck.cards.length == 0) break;
     result.push(deck.cards.pop());
   }

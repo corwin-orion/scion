@@ -8,9 +8,9 @@ import {
 	MessageComponentTypes,
 	verifyKeyMiddleware,
 } from 'discord-interactions';
-import { getRandomEmoji, DiscordRequest } from './utils.js';
+import { DiscordRequest } from './utils.js';
 import { drawCardsFromDeck, getPokerCardByNumber, getNewPokerDeck, shuffleDeck, discardCardsFromDeck } from './deck.js';
-import { getNewQuietYearDeck, getQuietYearCardByNumber } from './quiet-year.js';
+import { getNewQuietYearDeck, getQuietYearCardByNumber, getNewFleetingYearDeck } from './quiet-year.js';
 
 // Create an express app
 const app = express();
@@ -91,15 +91,17 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 			});
 		}
 
-		// "shuffle-quiet-year" command
-		if (name === 'shuffle-quiet-year') {
+		// "quiet-year-setup" command
+		if (name === 'quiet-year-setup') {
 			let fleeting = false;
 			options?.forEach(option => {
 				if (option.name === 'fleeting') fleeting = option.value;
 			});
+      console.log(fleeting)
 			try {
 				deck.type = "quiet year";
-				deck.cards = getNewQuietYearDeck();
+				deck.cards = fleeting ? getNewFleetingYearDeck() : getNewQuietYearDeck();
+        console.log(deck.cards)
 			} catch (err) {
 				return res.status(400).json({ error: 'could not shuffle', err });
 			}

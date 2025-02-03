@@ -36,7 +36,7 @@ const DRAW_COMMAND = {
 };
 
 const QUIET_YEAR_SHUFFLE_COMMAND = {
-	name: 'shuffle-quiet-year',
+	name: 'quiet-year-setup',
 	description: 'Set up the deck for a game of The Quiet Year',
 	type: 1,
 	integration_types: [0, 1],
@@ -44,6 +44,7 @@ const QUIET_YEAR_SHUFFLE_COMMAND = {
 	options: [
 		{
 			name: 'fleeting',
+      description: 'True = a shorter game',
 			type: 5
 		}
 	]

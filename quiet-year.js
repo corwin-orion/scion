@@ -1,3 +1,4 @@
+import { removeRandomElementsFromArray } from "./helpers/removeRandomElementsFromArray.js";
 import { shuffleArray } from "./helpers/shuffleArray.js";
 
 export function getQuietYearCardByNumber(cardNumber) {
@@ -83,14 +84,30 @@ export function getQuietYearCardByNumber(cardNumber) {
 	return result
 }
 
-export function getNewQuietYearDeck(fleeting) {
+export function getNewQuietYearDeck() {
 	const spades = [...Array(13).keys()];
-	if (fleeting) spades.slice(4)
 	shuffleArray(spades);
 	let result = [...spades]
 	for (let i = 1; i < 4; i++) {
 		const nextQuarter = [...Array(13).keys()]
-		if (fleeting) nextQuarter.slice(0, 9)
+		const nextQuarterSuited = nextQuarter.map(num => num + 13 * i);
+		shuffleArray(nextQuarterSuited);
+		result = [...result, ...nextQuarterSuited];
+	}
+	return result;
+}
+
+export function getNewFleetingYearDeck() {
+	const spades = [...Array(12).keys()];
+  removeRandomElementsFromArray(spades, 4);
+  spades.push(12); // Add King of Spades
+	shuffleArray(spades);
+	let result = [...spades]
+	for (let i = 1; i < 4; i++) {
+		const nextQuarter = i === 2 ?
+      [...Array(12).keys()]: // Remove King of Diamonds
+      [...Array(13).keys()];
+    removeRandomElementsFromArray(nextQuarter, i === 2 ? 3 : 4)
 		const nextQuarterSuited = nextQuarter.map(num => num + 13 * i);
 		shuffleArray(nextQuarterSuited);
 		result = [...result, ...nextQuarterSuited];

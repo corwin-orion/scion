@@ -1,6 +1,27 @@
 import 'dotenv/config';
 import { InstallGlobalCommands } from './utils.js';
 
+const ROLL_COMMAND = {
+	name: "roll",
+	description: 'Roll dice',
+	type: 1,
+	integration_types: [0, 1],
+	contexts: [0, 1, 2],
+	options: [
+		{
+			name: 'expression',
+			description: 'Which dice and what modifiers',
+			required: true,
+			type: 3,
+		},
+		{
+			name: 'reason',
+			description: "What you're rolling for",
+			type: 3,
+		}
+	]
+}
+
 // Poker deck commands
 const RESET_DECK_COMMAND = {
 	name: 'reset-deck',
@@ -83,8 +104,8 @@ const QUIET_YEAR_DISCARD_COMMAND = {
 			max_value: 52
 		}
 	]
-}
+};
 
-const ALL_COMMANDS = [RESET_DECK_COMMAND, SHUFFLE_COMMAND, DRAW_COMMAND, DISCARD_COMMAND, QUIET_YEAR_SETUP_COMMAND, QUIET_YEAR_DISCARD_COMMAND];
+const ALL_COMMANDS = [ROLL_COMMAND, RESET_DECK_COMMAND, SHUFFLE_COMMAND, DRAW_COMMAND, DISCARD_COMMAND, QUIET_YEAR_SETUP_COMMAND, QUIET_YEAR_DISCARD_COMMAND];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

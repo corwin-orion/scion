@@ -11,6 +11,7 @@ import {
 import { DiscordRequest } from './utils.js';
 import { drawCardsFromDeck, getPokerCardByNumber, getNewPokerDeck, shuffleDeck, discardCardsFromDeck } from './features/deck.js';
 import { getNewQuietYearDeck, getQuietYearCardByNumber, getNewFleetingYearDeck } from './features/quiet-year.js';
+import { parseRollExpression } from './features/dice.js';
 
 // Create an express app
 const app = express();
@@ -43,6 +44,36 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
   if (type === InteractionType.APPLICATION_COMMAND) {
     const { name, options } = data;
 
+    // "roll" command
+    if (name === 'roll' || name === 'r') {
+      let expression;
+      let reason;
+      options?.forEach(option => {
+        if (option.name === 'expression') expression = option.value;
+        else if (option.name === 'reason') reason = option.value;
+      });
+      let result;
+      try {
+        result = parseRollExpression(expression);
+      } catch (err) {
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: "Invalid roll expression.",
+            flags: InteractionResponseFlags.EPHEMERAL,
+          },
+        });
+      }
+
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled \`${expression}\`${reason ? ` (${reason})` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
+          flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+        },
+      });
+    }
+
     // "reset-deck" command
     if (name === 'reset-deck') {
       try {
@@ -54,7 +85,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: "Reset the deck. Want to shuffle it?",
+          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> reset the deck. Want to shuffle it?`,
           flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
           components: [
             {
@@ -85,7 +116,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: "Shuffled the deck",
+          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> shuffled the deck`,
           flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
         },
       });
@@ -126,7 +157,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         cardNumbers.map(cardNumber => getPokerCardByNumber(cardNumber)) :
         cardNumbers.map(cardNumber => getQuietYearCardByNumber(cardNumber));
       let message = deck.type === 'poker' ?
-        `Drew ${cards.length} card${cards.length === 1 ? '' : 's'}:` :
+        `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> drew ${cards.length} card${cards.length === 1 ? '' : 's'}:` :
         '';
       cards.forEach(card => message += '\n' + card);
       // Send a message into the channel where command was triggered from
@@ -157,7 +188,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
             content: "The deck is empty; reset it?",
-            flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+            flags: InteractionResponseFlags.EPHEMERAL,
             components: [
               {
                 type: MessageComponentTypes.ACTION_ROW,
@@ -179,7 +210,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `Discarded ${numCardsDiscarded} cards`,
+          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> discarded ${numCardsDiscarded} cards`,
           flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
         },
       });
@@ -335,7 +366,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `<@${req.body.member.user.id}> Reset the deck. Want to shuffle it?`,
+          content: `<@${req.body.member.user.id}> reset the deck. Want to shuffle it?`,
           flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
           components: [
             {
@@ -389,11 +420,9 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     if (componentId === 'quiet_year_next_week_button') {
       let card;
       let week;
-      console.log("Next week.", quietYearGame);
       try {
         week = ++quietYearGame.week;
         const drawnCards = drawCardsFromDeck(quietYearGame.deck);
-        console.log("Drew", drawnCards);
         card = getQuietYearCardByNumber(drawnCards);
         if (drawnCards[0] === 12) quietYearGame = null;
         DiscordRequest(endpoint, {

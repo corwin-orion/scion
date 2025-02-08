@@ -5,7 +5,7 @@ export function parseRollExpression(expression) {
         for (let i = 0; i < split.length; i++) {
             const parsedSegment = parseRollExpression(split[i]);
             result.breakout += parsedSegment.breakout;
-            if (i < split.length - 1) result.breakout += ' +'
+            if (i < split.length - 1) result.breakout += ' + '
             result.value += parsedSegment.value;
         }
     } else if (expression.includes('-')) {
@@ -13,30 +13,76 @@ export function parseRollExpression(expression) {
         for (let i = 0; i < split.length; i++) {
             const parsedSegment = parseRollExpression(split[i]);
             result.breakout += parsedSegment.breakout;
-            if (i < split.length - 1) result.breakout += ' -'
+            if (i < split.length - 1) result.breakout += ' - '
             i === 0 ? result.value += parsedSegment.value : result.value -= parsedSegment.value;
         }
     } else if (expression.includes('d')) {
-        const split = expression.split('d');
-        const numDice = Number(split[0]) || 1;
-        if (numDice > 1) result.breakout += ' (';
-        for (let i = 0; i < numDice; i++) {
-            const rollResult = rollDie(Number(split[1]));
-            result.breakout += `${numDice > 1 && i === 0 ? '' : ' '}\`${rollResult}\``;
-            if (i < numDice - 1) result.breakout += ' +'
-            result.value += rollResult;
+        let [numDice, ...dieType] = expression.split('d');
+        dieType = dieType.join('d');
+        if (isNaN(Number(dieType))) throw (`Invalid die type: \`d${dieType}\``);
+        let rollResult = { breakout: '', value: 0 };
+        // max or min dice flags
+        if (numDice.startsWith('max') || numDice.startsWith('min')) {
+            const mode = numDice.slice(0, 3);
+            numDice = numDice.slice(3);
+            if (isNaN(Number(numDice))) throw(`Invalid number of dice: \`${numDice}\``);
+            rollResult = rollDice(numDice, Number(dieType), mode);
+        } else {
+            // normal roll
+            if (isNaN(Number(numDice))) throw (`Invalid number of dice: \`${numDice}\``);
+            numDice = Number(numDice) || 1;
+            rollResult = rollDice(numDice, Number(dieType));
         }
-        if (numDice > 1) result.breakout += ')';
+        result.breakout += rollResult.breakout;
+        result.value += rollResult.value;
     } else {
-        result.breakout += ` ${Number(expression)}`;
+        result.breakout += `${Number(expression)}`;
         result.value += Number(expression);
     }
 
-    if (result.breakout.includes("NaN")) throw("NaN detected");
+    if (result.breakout.includes("NaN")) throw ("Invalid roll expression.");
 
     return result;
 };
 
-function rollDie(numSides) {
-    return Math.floor(Math.random() * numSides) + 1;
+function rollDice(numDice, numSides, mode) {
+    const result = { breakout: '', value: 0 };
+    const rolls = [];
+    let index = -1;
+    
+    // Roll dice and add them to the rolls array
+    for (let i = 0; i < numDice; i++) {
+        const roll = Math.floor(Math.random() * numSides) + 1
+        rolls.push(roll);
+    
+        if (mode === 'max' || mode === 'min') {
+            if (i === 0) {
+                index = i;
+                result.value = roll;
+            } else if ((mode === 'max' && roll > result.value) || (mode === 'min' && roll < result.value)) {
+                index = i;
+                result.value = roll;
+            }
+        } else {
+            result.breakout += `\`${roll}\`${i < (numDice || 1) - 1 ? ' + ' : ''}`;
+            result.value += roll;
+        }
+    }
+    
+    if (mode === 'max' || mode === 'min') {
+        // Construct result.breakout and calculate result.value
+        for (let i = 0; i < rolls.length; i++) {
+            if (i === index) {
+                result.breakout += `**\`${rolls[i]}\`**`;
+            } else {
+                result.breakout += `\`${rolls[i]}\``;
+            }
+            if (i < rolls.length - 1) result.breakout += ', '
+        }
+        result.breakout = `${mode}(${result.breakout})`
+    } else if (numDice > 1) {
+        result.breakout = `(${result.breakout})`;
+    }
+
+    return result;
 }

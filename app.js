@@ -45,7 +45,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     const { name, options } = data;
 
     // "roll" command
-    if (name === 'roll' || name === 'r') {
+    if (name === 'roll' || name === 'r' || name === 'roll-private') {
       let expression;
       let reason;
       options?.forEach(option => {
@@ -55,11 +55,12 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       let result;
       try {
         result = parseRollExpression(expression);
+        console.log(result)
       } catch (err) {
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: "Invalid roll expression.",
+            content: err,
             flags: InteractionResponseFlags.EPHEMERAL,
           },
         });
@@ -68,8 +69,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled \`${expression}\`${reason ? ` (${reason})` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
-          flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+          content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled \`${expression}\`${reason ? `\nReason: ${reason}` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
+          flags: name === 'roll-private' ? InteractionResponseFlags.EPHEMERAL : InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
         },
       });
     }

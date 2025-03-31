@@ -45,7 +45,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
     const { name, options } = data;
 
     // "roll" command
-    if (name === 'roll' || name === 'r' || name === 'roll-private') {
+    if (name === 'roll' || name === 'r' || name === 'roll-private' || name === 'pr') {
+      let roll_is_private = name === 'roll-private' || name === 'pr';
       let expression;
       let reason;
       options?.forEach(option => {
@@ -69,7 +70,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled \`${expression}\`${reason ? `\nReason: ${reason}` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
-          flags: name === 'roll-private' ? InteractionResponseFlags.EPHEMERAL : InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
+          flags: roll_is_private ? InteractionResponseFlags.EPHEMERAL : InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
         },
       });
     }

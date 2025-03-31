@@ -2,16 +2,17 @@
 
 This project contains a Discord app to facilitate tabletop gaming written in JavaScript, built off of the [getting started guide](https://discord.com/developers/docs/getting-started).
 
-![Demo of app](https://github.com/discord/discord-example-app/raw/main/assets/getting-started-demo.gif?raw=true)
-
 ## Project structure
 Below is a basic overview of the project structure:
 
 ```
 ├── app.js      -> main entrypoint for app
-├── commands.js -> slash command payloads + helpers
-├── deck.js     -> logic specific to card decks
-├── utils.js    -> utility functions and enums
+├── commands.js -> slash command payloads
+├── /features
+|   └── <feature>.js -> feature-specific logic
+├── /helpers
+|   └── <func>.js    -> helper functions
+├── utils.js    -> Discord utility functions
 ├── package.json
 ├── README.md
 └── .gitignore
@@ -64,7 +65,7 @@ node app.js
 
 The project needs a public endpoint where Discord can send requests. To develop and test locally, you can use something like [`ngrok`](https://ngrok.com/) to tunnel HTTP traffic.
 
-Install ngrok if you haven't already, then start listening on port `3000`:
+Install ngrok if you haven't already, then start listening on port `3000` using your static ngrok address (mine is `spider-discrete-mullet.ngrok-free.app`):
 
 ```
 ngrok http --url=spider-discrete-mullet.ngrok-free.app 3000
@@ -76,15 +77,15 @@ You should see your connection open:
 Tunnel Status                 online
 Version                       2.0/2.0
 Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://1234-someurl.ngrok.io -> localhost:3000
+Forwarding                    https://spider-discrete-mullet.ngrok-free.app -> localhost:3000
 
 Connections                  ttl     opn     rt1     rt5     p50     p90
                               0       0       0.00    0.00    0.00    0.00
 ```
 
-Copy the forwarding address that starts with `https`, in this case `https://1234-someurl.ngrok.io`, then go to your [app's settings](https://discord.com/developers/applications).
+Copy the forwarding address, `https://spider-discrete-mullet.ngrok-free.app`, then go to your [app's settings](https://discord.com/developers/applications).
 
-On the **General Information** tab, there will be an **Interactions Endpoint URL**. Paste your ngrok address there, and append `/interactions` to it (`https://1234-someurl.ngrok.io/interactions` in the example).
+On the **General Information** tab, there will be an **Interactions Endpoint URL**. Paste your ngrok address there, and append `/interactions` to it (`https://spider-discrete-mullet.ngrok-free.app/interactions` in the example).
 
 Click **Save Changes**, and your app should be ready to run 🚀
 

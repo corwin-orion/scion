@@ -12,7 +12,7 @@ export function getQuietYearCardByNumber(cardNumber) {
 	else if (numericValue === 10) cardValue = "Jack";
 	else if (numericValue === 11) cardValue = "Queen";
 	else if (numericValue === 12) cardValue = "King";
-	else cardValue = ` ${numericValue + 2}`;
+	else cardValue = ` ${numericValue + 1}`;
 
 	// Combine card value with suit
 	if (suit < 1) result += `♠️ ${cardValue} of Spades`;

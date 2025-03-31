@@ -55,7 +55,6 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
       let result;
       try {
         result = parseRollExpression(expression);
-        console.log(result)
       } catch (err) {
         return res.send({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

@@ -67,7 +67,7 @@ The project needs a public endpoint where Discord can send requests. To develop 
 Install ngrok if you haven't already, then start listening on port `3000`:
 
 ```
-ngrok http 3000
+ngrok http --url=spider-discrete-mullet.ngrok-free.app 3000
 ```
 
 You should see your connection open:

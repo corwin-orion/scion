@@ -1,4 +1,4 @@
-# Getting Started app for Discord
+# Scion app for Discord
 
 This project contains a Discord app to facilitate tabletop gaming written in JavaScript, built off of the [getting started guide](https://discord.com/developers/docs/getting-started).
 

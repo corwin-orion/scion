@@ -77,21 +77,27 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
 
         // "cpr" command (Cyberpunk Red diceroll)
         if (name === 'cpr') {
-            let modifier;
+            let modifier = '';
             let reason;
+
             options?.forEach(option => {
-                if (option.name === 'modifier') modifier = option.value;
+                if (option.name === 'modifier') modifier = String(option.value);
                 else if (option.name === 'reason') reason = option.value;
             });
+
+            const formattedModifier = modifier
+                ? (modifier.startsWith('-') ? modifier : `+${modifier}`)
+                : '';
+
             let result;
             try {
-                let expression = `1d10<>${modifier.startsWith('-') ? modifier : `+${modifier}`}`;
+                const expression = `1d10<>${formattedModifier}`;
                 result = parseRollExpression(expression);
             } catch (err) {
                 return res.send({
                     type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                     data: {
-                        content: err,
+                        content: String(err),
                         flags: InteractionResponseFlags.EPHEMERAL,
                     },
                 });
@@ -100,11 +106,11 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
             return res.send({
                 type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: {
-                    content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled at \`${modifier.startsWith('-') ? modifier : `+${modifier}`}\`${reason ? `\nReason: ${reason}` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
+                    content: `<@${req.body.member ? req.body.member.user.id : req.body.user.id}> rolled${formattedModifier ? ` at \`${formattedModifier}\`` : ''}${reason ? `\nReason: ${reason}` : ''}\nBreakdown: ${result.breakout}\nResult: ${result.value}`,
                     flags: InteractionResponseFlags.SUPPRESS_NOTIFICATIONS,
                 },
             });
-        };
+        }
 
         // "reset-deck" command
         if (name === 'reset-deck') {
